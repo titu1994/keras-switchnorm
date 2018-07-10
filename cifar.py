@@ -20,9 +20,9 @@ from switchnorm import SwitchNormalization
 if not os.path.exists('weights/'):
     os.makedirs('weights/')
 
-batch_size = 100
+batch_size = 200
 nb_classes = 10
-nb_epoch = 25
+nb_epoch = 100
 
 img_rows, img_cols = 32, 32
 img_channels = 3
@@ -31,24 +31,27 @@ img_dim = (img_channels, img_rows, img_cols) if K.image_dim_ordering() == "th" e
 
 ip = Input(shape=img_dim)
 
+# 0.98 is stable, whereas 0.99 is unstable for this model.
+# Stability here comes at the cost of slight performance.
+
 x = Conv2D(64, (3, 3), padding='same', kernel_initializer='he_normal')(ip)
-x = SwitchNormalization(axis=-1)(x)
+x = SwitchNormalization(axis=-1, momentum=0.98)(x)
 x = Activation('relu')(x)
 
 x = Conv2D(64, (3, 3), padding='same', kernel_initializer='he_normal')(x)
-x = SwitchNormalization(axis=-1)(x)
+x = SwitchNormalization(axis=-1, momentum=0.98)(x)
 x = Activation('relu')(x)
 
 x = Conv2D(128, (3, 3), padding='same', kernel_initializer='he_normal', strides=(2, 2))(x)
-x = SwitchNormalization(axis=-1)(x)
+x = SwitchNormalization(axis=-1, momentum=0.98)(x)
 x = Activation('relu')(x)
 
 x = Conv2D(128, (3, 3), padding='same', kernel_initializer='he_normal')(x)
-x = SwitchNormalization(axis=-1)(x)
+x = SwitchNormalization(axis=-1, momentum=0.98)(x)
 x = Activation('relu')(x)
 
 x = Conv2D(256, (3, 3), padding='same', kernel_initializer='he_normal', strides=(2, 2))(x)
-x = SwitchNormalization(axis=-1)(x)
+x = SwitchNormalization(axis=-1, momentum=0.98)(x)
 x = Activation('relu')(x)
 
 x = Conv2D(256, (3, 3), padding='same', kernel_initializer='he_normal')(x)
@@ -94,7 +97,7 @@ if os.path.exists(weights_file):
 out_dir = "weights/"
 
 lr_reducer = ReduceLROnPlateau(monitor='val_acc', factor=np.sqrt(0.5),
-                               cooldown=0, patience=5, min_lr=1e-5)
+                               cooldown=0, patience=5, min_lr=1e-4, verbose=1)
 model_checkpoint = ModelCheckpoint(weights_file, monitor="val_acc", save_best_only=True,
                                    save_weights_only=True, verbose=1)
 

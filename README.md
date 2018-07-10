@@ -26,11 +26,15 @@ x = SwitchNormalization(axis=-1)(x)
 
 # Example
 
-An example script for CIFAR 10 is provided in `cifar.py`, which trains a toy model for 25 epochs. It obtains an accuracy of 88%.
+An example script for CIFAR 10 is provided in `cifar.py`, which trains a toy model for 25 epochs. It obtains an accuracy of 87%.
 
 ## **Issues**
 
-Currently, when training this toy model, near the 22-25th epoch, training abruptly fluctuates and accuracy plummets. Whether this is due to the normalization, or whether this is due to the model itself is being investigated.
+Currently, when training this toy model, near the 22-25th epoch, training abruptly fluctuates and accuracy plummets when using a momentum of 0.99 or 0.997.
+
+This is seen in `Figure 8` from the paper, that Batch Normalization moving average is highly unstable.
+
+Therefore the default momentum has been set to 0.98, which offers stability at the loss of performance. Higher momentum is recommended if using check pointing to restart training from best previous weights.
 
 # Tests
 

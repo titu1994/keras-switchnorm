@@ -26,7 +26,10 @@ class SwitchNormalization(Layer):
             For instance, after a `Conv2D` layer with
             `data_format="channels_first"`,
             set `axis=1` in `BatchNormalization`.
-        momentum: Momentum for the moving mean and the moving variance.
+        momentum: Momentum for the moving mean and the moving variance. The original
+            implementation suggests a default momentum of `0.997`, however it is highly
+            unstable and training can fail after a few epochs. To stabilise training, use
+            lower values of momentum such as `0.99` or `0.98`.
         epsilon: Small float added to variance to avoid dividing by zero.
         final_gamma: Bool value to determine if this layer is the final
             normalization layer for the residual block.  Overrides the initialization
@@ -69,8 +72,8 @@ class SwitchNormalization(Layer):
 
     def __init__(self,
                  axis=-1,
-                 momentum=0.997,
-                 epsilon=1e-5,
+                 momentum=0.99,
+                 epsilon=1e-3,
                  final_gamma=False,
                  center=True,
                  scale=True,
@@ -192,15 +195,23 @@ class SwitchNormalization(Layer):
         variance_instance = K.var(inputs, reduction_axes, keepdims=True)
 
         mean_layer = K.mean(mean_instance, self.axis, keepdims=True)
-        temp = variance_instance + K.pow(mean_instance, 2)
-        variance_layer = K.mean(temp, self.axis, keepdims=True) - K.pow(mean_layer, 2)
+        temp = variance_instance + K.square(mean_instance)
+        variance_layer = K.mean(temp, self.axis, keepdims=True) - K.square(mean_layer)
 
         def training_phase():
             mean_batch = K.mean(mean_instance, axis=0, keepdims=True)
-            variance_batch = K.mean(temp, axis=0, keepdims=True) - K.pow(mean_batch, 2)
+            variance_batch = K.mean(temp, axis=0, keepdims=True) - K.square(mean_batch)
 
             mean_batch_reshaped = K.flatten(mean_batch)
             variance_batch_reshaped = K.flatten(variance_batch)
+
+            if K.backend() != 'cntk':
+                sample_size = K.prod([K.shape(inputs)[axis]
+                                      for axis in reduction_axes])
+                sample_size = K.cast(sample_size, dtype=K.dtype(inputs))
+
+                # sample variance - unbiased estimator of population variance
+                variance_batch_reshaped *= sample_size / (sample_size - (1.0 + self.epsilon))
 
             self.add_update([K.moving_average_update(self.moving_mean,
                                                      mean_batch_reshaped,
