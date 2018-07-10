@@ -23,6 +23,7 @@ if not os.path.exists('weights/'):
 batch_size = 200
 nb_classes = 10
 nb_epoch = 100
+momentum = 0.98
 
 img_rows, img_cols = 32, 32
 img_channels = 3
@@ -35,23 +36,23 @@ ip = Input(shape=img_dim)
 # Stability here comes at the cost of slight performance.
 
 x = Conv2D(64, (3, 3), padding='same', kernel_initializer='he_normal')(ip)
-x = SwitchNormalization(axis=-1, momentum=0.98)(x)
+x = SwitchNormalization(axis=-1, momentum=momentum)(x)
 x = Activation('relu')(x)
 
 x = Conv2D(64, (3, 3), padding='same', kernel_initializer='he_normal')(x)
-x = SwitchNormalization(axis=-1, momentum=0.98)(x)
+x = SwitchNormalization(axis=-1, momentum=momentum)(x)
 x = Activation('relu')(x)
 
 x = Conv2D(128, (3, 3), padding='same', kernel_initializer='he_normal', strides=(2, 2))(x)
-x = SwitchNormalization(axis=-1, momentum=0.98)(x)
+x = SwitchNormalization(axis=-1, momentum=momentum)(x)
 x = Activation('relu')(x)
 
 x = Conv2D(128, (3, 3), padding='same', kernel_initializer='he_normal')(x)
-x = SwitchNormalization(axis=-1, momentum=0.98)(x)
+x = SwitchNormalization(axis=-1, momentum=momentum)(x)
 x = Activation('relu')(x)
 
 x = Conv2D(256, (3, 3), padding='same', kernel_initializer='he_normal', strides=(2, 2))(x)
-x = SwitchNormalization(axis=-1, momentum=0.98)(x)
+x = SwitchNormalization(axis=-1, momentum=momentum)(x)
 x = Activation('relu')(x)
 
 x = Conv2D(256, (3, 3), padding='same', kernel_initializer='he_normal')(x)

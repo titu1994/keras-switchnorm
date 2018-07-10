@@ -117,7 +117,4 @@ for i, (id, name) in enumerate(layer_dict.items()):
     plt.xlim([0.0, 1.0])
     plt.title(name + ' - var')
 
-
 plt.show()
-
-
