@@ -28,6 +28,12 @@ x = SwitchNormalization(axis=-1)(x)
 
 An example script for CIFAR 10 is provided in `cifar.py`, which trains a toy model for 25 epochs. It obtains an accuracy of 87%.
 
+## Importance Weights
+
+Below is the importance weights of the toy model trained on SwitchNormalization with momentum of 0.98. 
+
+<img src="https://github.com/titu1994/keras-switchnorm/blob/master/images/switchnorm.png?raw=true" height=100% width=100%>
+
 ## **Issues**
 
 Currently, when training this toy model, near the 22-25th epoch, training abruptly fluctuates and accuracy plummets when using a momentum of 0.99 or 0.997.
